@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "postbuild": "cp public/_redirects dist/markhor-frontend/_redirects || echo '_redirects copied'",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
