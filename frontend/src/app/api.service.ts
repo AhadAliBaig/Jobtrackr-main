@@ -109,6 +109,51 @@ export class ApiService {
     };
   }
 
+  // Sample resume data for new users
+  private getSampleResumeData(): string {
+    return `JOHN DOE
+Software Engineer
+Email: john.doe@email.com | Phone: (555) 123-4567 | LinkedIn: linkedin.com/in/johndoe
+
+PROFESSIONAL SUMMARY
+Experienced software engineer with 3+ years of expertise in full-stack development. 
+Proficient in JavaScript, TypeScript, React, Node.js, and PostgreSQL. Passionate about 
+building scalable web applications and solving complex technical challenges.
+
+TECHNICAL SKILLS
+• Programming Languages: JavaScript, TypeScript, Python, Java
+• Frontend: React, Angular, HTML5, CSS3, Tailwind CSS
+• Backend: Node.js, Express.js, RESTful APIs
+• Databases: PostgreSQL, MongoDB, MySQL
+• Tools: Git, Docker, AWS, CI/CD
+
+PROFESSIONAL EXPERIENCE
+
+Software Engineer | Tech Company Inc. | 2021 - Present
+• Developed and maintained full-stack web applications using React and Node.js
+• Collaborated with cross-functional teams to deliver high-quality software solutions
+• Implemented RESTful APIs handling 10,000+ requests per day
+• Reduced application load time by 40% through performance optimization
+
+Junior Developer | StartupXYZ | 2020 - 2021
+• Built responsive web interfaces using React and TypeScript
+• Participated in agile development processes and code reviews
+• Fixed critical bugs and improved application stability
+
+EDUCATION
+Bachelor of Science in Computer Science
+University Name | 2016 - 2020
+GPA: 3.8/4.0
+
+PROJECTS
+• JobTrackr - Full-stack job application tracker (React, Node.js, PostgreSQL)
+• E-commerce Platform - Built scalable shopping cart system
+• Task Management App - Real-time collaboration tool
+
+---
+This is a sample resume. Replace it with your own information!`;
+  }
+
   private mockJobList: Job[] = [];
   private nextJobId = 1;
   public jobs$: BehaviorSubject<Job[]>;
@@ -319,6 +364,16 @@ export class ApiService {
 
   getResume(): Observable<string> {
     return this.http.get<string>(`${BACKEND_URL}/api/resume`).pipe(
+      // Auto-create sample resume if user has no resume
+      switchMap(resumeText => {
+        if (!resumeText || resumeText.trim() === '') {
+          // Create sample resume in backend (so it syncs across devices)
+          return this.saveResume(this.getSampleResumeData()).pipe(
+            map(() => this.getSampleResumeData())
+          );
+        }
+        return of(resumeText);
+      }),
       tap(resumeText => {
         this.mockMasterResume = resumeText;
         this.resume$.next(resumeText);

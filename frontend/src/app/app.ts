@@ -13,7 +13,7 @@ import { filter } from 'rxjs/operators';
 })
 export class App implements OnInit {
   isSidebarCollapsed = false;
-  isDarkMode = false;
+  isDarkMode = true;  // Default to dark mode
   isLoginPage = false;
 
   // NEW: Dynamic User Data
@@ -36,11 +36,18 @@ export class App implements OnInit {
   ngOnInit(): void {
     this.apiService.checkHealth().subscribe();
 
-    // 1. Load Theme
+    // 1. Load Theme - Default to dark mode if no preference saved
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
+    if (savedTheme === 'light') {
+      this.isDarkMode = false;
+      this.renderer.removeClass(this.document.body, 'dark-theme');
+    } else {
+      // Default to dark mode (either 'dark' saved or no preference)
       this.isDarkMode = true;
       this.renderer.addClass(this.document.body, 'dark-theme');
+      if (!savedTheme) {
+        localStorage.setItem('theme', 'dark');  // Save default preference
+      }
     }
 
     // 2. NEW: Subscribe to Current User
