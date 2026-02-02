@@ -38,6 +38,12 @@ router.post('/', async (req, res) => {
     const userId = req.headers['x-user-id'] || req.headers['X-User-Id'];
 
     if (!userId) {
+      // Debug: Log what headers we received
+      console.log('[Resume POST] Headers received:', {
+        'x-user-id': req.headers['x-user-id'],
+        'X-User-Id': req.headers['X-User-Id'],
+        allHeaders: Object.keys(req.headers).filter(k => k.toLowerCase().includes('user'))
+      });
       return res.status(401).json({ error: 'Not authenticated' });
     }
     

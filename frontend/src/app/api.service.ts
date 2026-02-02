@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, delay, BehaviorSubject, tap, map, throwError } from 'rxjs';
+import { Observable, of, delay, BehaviorSubject, tap, map, throwError, switchMap } from 'rxjs';
 
 export interface ResumeResource {
   id: number;
@@ -11,6 +11,7 @@ export interface ResumeResource {
 }
 
 export interface User {
+  id?: number;  // User ID from backend
   name: string;
   email: string;
   password?: string; 
@@ -95,28 +96,18 @@ export class ApiService {
     }
   ];
 
-  private defaultJobList: Job[] = [
-    {
-      id: 1,
-      company: 'Google',
-      title: 'Software Engineer',
-      status: 'Interviewing',
-      notes: 'First round done.',
-      jobDescription: 'Seeking a SWE with 5+ years of Go.',
-      aiAnalysis: 'Your resume is a 92% match.',
-      deadline: '2025-12-31'
-    },
-    {
-      id: 2,
-      company: 'Microsoft',
-      title: 'Frontend Developer',
+  // Sample job data for new users
+  private getSampleJobData() {
+    return {
+      company: 'Sample Company',
+      title: 'Sample Job Application',
       status: 'Applied',
-      notes: 'Sent resume.',
-      jobDescription: 'Requires strong React and TypeScript skills.',
-      aiAnalysis: 'Your resume is a 78% match.',
-      deadline: '2025-11-30'
-    }
-  ];
+      notes: 'This is a sample job. Edit or delete it to start tracking your own applications!',
+      jobDescription: 'This is a sample job description. Click edit to see how it works, or delete it to start fresh with your own job applications.',
+      aiAnalysis: null,
+      deadline: null
+    };
+  }
 
   private mockJobList: Job[] = [];
   private nextJobId = 1;
@@ -183,33 +174,34 @@ export class ApiService {
   ];
   
   constructor(private http: HttpClient) {
-    // 1. Load Jobs
-    const savedJobs = localStorage.getItem('markhor_jobs');
-    if (savedJobs) {
-      this.mockJobList = JSON.parse(savedJobs);
-    } else {
-      this.mockJobList = this.defaultJobList;
-    }
-
-    if (this.mockJobList.length > 0) {
-      const maxId = Math.max(...this.mockJobList.map(j => j.id));
-      this.nextJobId = maxId + 1;
-    } else {
-      this.nextJobId = 1;
-    }
-    this.jobs$ = new BehaviorSubject<Job[]>(this.mockJobList);
-
-    // 2. Load Resume
+    // 1. Initialize jobs$ with empty array (backend will populate it)
+    this.mockJobList = [];
+    this.nextJobId = 1;
+    this.jobs$ = new BehaviorSubject<Job[]>([]);  // Start empty!
+  
+    // 2. Load Resume (keep this - still uses localStorage as backup)
     const savedResume = localStorage.getItem('markhor_resume');
     if (savedResume) {
       this.mockMasterResume = savedResume;
     }
     this.resume$ = new BehaviorSubject<string>(this.mockMasterResume);
-
-    // 3. NEW: Load User
+  
+    // 3. Load User
     const savedUser = localStorage.getItem('markhor_user');
     if (savedUser) {
-      this.currentUserSubject.next(JSON.parse(savedUser));
+      try {
+        const user = JSON.parse(savedUser);
+        // Validate user object has required fields
+        if (user && user.id) {
+          this.currentUserSubject.next(user);
+        } else {
+          console.warn('[ApiService] Invalid user object in localStorage, clearing it');
+          localStorage.removeItem('markhor_user');
+        }
+      } catch (error) {
+        console.error('[ApiService] Failed to parse user from localStorage:', error);
+        localStorage.removeItem('markhor_user');
+      }
     }
   }
 
@@ -230,6 +222,11 @@ export class ApiService {
       { email, password }
     ).pipe(
       tap(response => {
+        // Ensure user object has id before storing
+        if (!response.user || !response.user.id) {
+          console.error('[Login] User object missing id:', response.user);
+          throw new Error('Invalid user data received from server');
+        }
         this.currentUserSubject.next(response.user);
         localStorage.setItem('markhor_user', JSON.stringify(response.user));
       }),
@@ -243,6 +240,11 @@ export class ApiService {
       { name, email, password }
     ).pipe(
       tap(response => {
+        // Ensure user object has id before storing
+        if (!response.user || !response.user.id) {
+          console.error('[Register] User object missing id:', response.user);
+          throw new Error('Invalid user data received from server');
+        }
         this.currentUserSubject.next(response.user);
         localStorage.setItem('markhor_user', JSON.stringify(response.user));
       }),
@@ -253,6 +255,10 @@ export class ApiService {
   logout() {
     this.currentUserSubject.next(null);
     localStorage.removeItem('markhor_user');
+    localStorage.removeItem('markhor_jobs');  // Clear old jobs from localStorage
+    // Reset to empty
+    this.mockJobList = [];
+    this.jobs$.next([]);
   }
 
   // --- HELPER: Map backend snake_case to frontend camelCase ---
@@ -282,6 +288,16 @@ export class ApiService {
   getJobs():  Observable<Job[]> {
     return this.http.get<any[]>(`${BACKEND_URL}/api/jobs`).pipe(
       map(jobs => this.mapJobsFromBackend(jobs)),
+      // Auto-create sample job if user has no jobs
+      switchMap(jobs => {
+        if (jobs.length === 0) {
+          // Create sample job in backend (so it syncs across devices)
+          return this.createJob(this.getSampleJobData()).pipe(
+            map(sampleJob => [sampleJob])
+          );
+        }
+        return of(jobs);
+      }),
       tap(jobs => {
         // Update local state with real data from backend
         this.mockJobList = jobs;
