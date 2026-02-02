@@ -2,6 +2,7 @@ import express from 'express';
 import { ResumeAnalyzer } from '../ai/resumeAnalyzer';
 import { AIConfig } from '../ai/aiService';
 
+
 const router = express.Router();
 
 // Configure AI (reads from .env)

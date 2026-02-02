@@ -7,7 +7,6 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const userId = req.headers['x-user-id'];
-    if (!userId) {
 
 if (!userId) {
   return res.status(401).json({ error: 'Not authenticated' });
