@@ -1,6 +1,6 @@
 import express from 'express';
 import { ResumeAnalyzer } from '../ai/resumeAnalyzer';
-import { AIConfig } from '../ai/aiService';
+import { AIConfig, AIService } from '../ai/aiService';
 
 
 const router = express.Router();
@@ -12,6 +12,7 @@ const aiConfig: AIConfig = {
 };
 
 const analyzer = new ResumeAnalyzer(aiConfig);
+const aiService = new AIService(aiConfig);
 
 // POST /ai/analyze - Analyze resume against job description
 router.post('/analyze', async (req, res) => {
@@ -47,6 +48,27 @@ router.post('/analyze', async (req, res) => {
   } catch (error: any) {
     console.error('[AI ROUTE ERROR]', error);
     res.status(500).json({ error: 'AI analysis failed' });
+  }
+});
+
+
+router.post('/cover-letter', async (req, res) => {
+  try {
+    const { jobDescription } = req.body;
+    if (!jobDescription) {
+      return res.status(400).json({ error: 'jobDescription required' });
+    }
+    
+    const prompt = `Write a professional cover letter for this job. 250-350 words.\n\n${jobDescription}`;
+    const result = await aiService.callAI(prompt);
+    
+    if (!result.success) {
+      return res.status(500).json({ error: result.error });
+    }
+    
+    res.json({ coverLetter: result.data });
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to generate cover letter' });
   }
 });
 

@@ -371,10 +371,11 @@ export class ApiService {
   }
 
   generateCoverLetter(jobDescription: string): Observable<{ coverLetter: string }> {
-    const mockResponse = `Dear Hiring Manager... (simulated response based on ${jobDescription.substring(0, 15)}...)`;
-    return of({ coverLetter: mockResponse }).pipe(delay(1500));
+    return this.http.post<{ coverLetter: string }>(
+      `${BACKEND_URL}/ai/cover-letter`,
+      { jobDescription }
+    );
   }
-  
   // Resources (Mock)
   getResources(): Observable<ResumeResource[]> {
     return of(this.mockResources).pipe(delay(300));
