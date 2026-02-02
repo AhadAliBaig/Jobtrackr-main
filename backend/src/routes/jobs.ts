@@ -6,7 +6,12 @@ const router = express.Router();
 // GET /api/jobs - Get all jobs for a user
 router.get('/', async (req, res) => {
   try {
-    const userId = 1; // TODO: Get from auth token later
+    const userId = req.headers['x-user-id'];
+    if (!userId) {
+
+if (!userId) {
+  return res.status(401).json({ error: 'Not authenticated' });
+} // TODO: Get from auth token later
     
     const result = await pool.query(
       'SELECT * FROM jobs WHERE user_id = $1 ORDER BY created_at DESC',
@@ -24,7 +29,11 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = 1; // TODO: Get from auth token later
+    const userId = req.headers['x-user-id'];
+
+if (!userId) {
+  return res.status(401).json({ error: 'Not authenticated' });
+}; // TODO: Get from auth token later
     
     const result = await pool.query(
       'SELECT * FROM jobs WHERE id = $1 AND user_id = $2',
@@ -46,7 +55,11 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { company, title, status, notes, jobDescription, aiAnalysis, deadline } = req.body;
-    const userId = 1; // TODO: Get from auth token later
+    const userId = req.headers['x-user-id'];
+
+if (!userId) {
+  return res.status(401).json({ error: 'Not authenticated' });
+}; // TODO: Get from auth token later
     
     // Validate required fields
     if (!company || !title || !jobDescription) {
@@ -72,7 +85,11 @@ router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { company, title, status, notes, jobDescription, aiAnalysis, deadline } = req.body;
-    const userId = 1; // TODO: Get from auth token later
+    const userId = req.headers['x-user-id'];
+
+if (!userId) {
+  return res.status(401).json({ error: 'Not authenticated' });
+}; // TODO: Get from auth token later
     
     // Check if job exists and belongs to user
     const checkResult = await pool.query(
@@ -105,7 +122,11 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = 1; // TODO: Get from auth token later
+    const userId = req.headers['x-user-id'];
+
+if (!userId) {
+  return res.status(401).json({ error: 'Not authenticated' });
+}; // TODO: Get from auth token later
     
     const result = await pool.query(
       'DELETE FROM jobs WHERE id = $1 AND user_id = $2 RETURNING *',

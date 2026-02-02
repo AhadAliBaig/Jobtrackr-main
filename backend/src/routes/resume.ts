@@ -6,7 +6,11 @@ const router = express.Router();
 // GET /api/resume - Get user's resume
 router.get('/', async (req, res) => {
   try {
-    const userId = 1; // TODO: Get from auth token later
+    const userId = req.headers['x-user-id'];
+
+  if (!userId) {
+  return res.status(401).json({ error: 'Not authenticated' });
+}; // TODO: Get from auth token later
     
     const result = await pool.query(
       'SELECT resume_text FROM resumes WHERE user_id = $1',
@@ -29,7 +33,11 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { resumeText } = req.body;
-    const userId = 1; // TODO: Get from auth token later
+    const userId = req.headers['x-user-id'];
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }; // TODO: Get from auth token later
     
     if (!resumeText) {
       return res.status(400).json({ error: 'Resume text is required' });
