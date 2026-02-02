@@ -17,7 +17,10 @@ export class AIService {
     this.apiKey = config.apiKey || process.env.GEMINI_API_KEY || "";
     this.model = config.model || process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
-    console.log("[AIService] GEMINI_API_KEY prefix:", this.apiKey.slice(0, 8));
+    // Only log in development, not production
+    if (process.env.NODE_ENV !== 'production' && this.apiKey) {
+      console.log("[AIService] GEMINI_API_KEY configured");
+    }
 
     if (!this.apiKey) {
       console.warn("[AIService] GEMINI_API_KEY is not set.");

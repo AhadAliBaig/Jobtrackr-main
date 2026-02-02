@@ -21,7 +21,7 @@ export interface AnalysisResponse {
   providedIn: 'root'
 })
 export class AnalysisService {
-  private apiUrl = 'https://jobtrackr-vikn-backend.onrender.com/ai/analyze';
+  private apiUrl = 'https://jobtrackr-vikn.onrender.com/ai/analyze';
 
   constructor(private http: HttpClient) {}
 

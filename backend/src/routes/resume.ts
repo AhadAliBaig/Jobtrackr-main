@@ -6,11 +6,12 @@ const router = express.Router();
 // GET /api/resume - Get user's resume
 router.get('/', async (req, res) => {
   try {
-    const userId = req.headers['x-user-id'];
+    // Express normalizes headers to lowercase, but check both to be safe
+    const userId = req.headers['x-user-id'] || req.headers['X-User-Id'];
 
-  if (!userId) {
-  return res.status(401).json({ error: 'Not authenticated' });
-}; // TODO: Get from auth token later
+    if (!userId) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
     
     const result = await pool.query(
       'SELECT resume_text FROM resumes WHERE user_id = $1',
@@ -33,11 +34,12 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { resumeText } = req.body;
-    const userId = req.headers['x-user-id'];
+    // Express normalizes headers to lowercase, but check both to be safe
+    const userId = req.headers['x-user-id'] || req.headers['X-User-Id'];
 
     if (!userId) {
       return res.status(401).json({ error: 'Not authenticated' });
-    }; // TODO: Get from auth token later
+    }
     
     if (!resumeText) {
       return res.status(400).json({ error: 'Resume text is required' });

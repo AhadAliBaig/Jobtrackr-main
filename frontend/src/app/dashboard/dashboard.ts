@@ -22,10 +22,13 @@ export class DashboardComponent implements OnInit {
   constructor(private apiService: ApiService) {}
 
   ngOnInit(): void {
-    // 1. Load Stats
+    // 1. Load jobs from backend first (this populates jobs$)
+    this.apiService.getJobs().subscribe();
+
+    // 2. Load Stats (reads from jobs$ observable)
     this.stats$ = this.apiService.getJobStats();
 
-    // 2. Check Health
+    // 3. Check Health
     this.apiService.checkHealth().subscribe({
       next: (response: any) => {
         this.healthStatus = `Online`;
