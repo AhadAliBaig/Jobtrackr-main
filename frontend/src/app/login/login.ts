@@ -94,9 +94,21 @@ export class LoginComponent {
     this.errorMessage = ''; // Clear error when switching modes
   }
 
-  onSubmit() {
+  onSubmit(event?: Event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    console.log('[Login] Form submitted', { 
+      isLoginMode: this.isLoginMode, 
+      formValid: this.loginForm.valid,
+      formValue: this.loginForm.value 
+    });
+    
     // 1. Basic Validation
     if (this.loginForm.invalid) {
+      console.log('[Login] Form is invalid', this.loginForm.errors);
       // If in Register mode, Name is mandatory.
       if (!this.isLoginMode && !this.loginForm.get('name')?.value) {
         this.loginForm.get('name')?.setErrors({ required: true });
@@ -113,32 +125,36 @@ export class LoginComponent {
     this.errorMessage = ''; // Clear previous errors
     const { name, email, password } = this.loginForm.value;
 
+    console.log('[Login] Calling API', { email, isLoginMode: this.isLoginMode });
+
     if (this.isLoginMode) {
       // --- LOGIN ---
       this.apiService.login(email, password).subscribe({
-        next: () => {
+        next: (result) => {
+          console.log('[Login] Success', result);
           this.isLoading = false;
           this.router.navigate(['/dashboard']);
         },
         error: (err) => {
+          console.error('[Login] Error', err);
           this.isLoading = false;
           // Extract error message from HTTP error response
           this.errorMessage = err.error?.error || err.error?.message || 'Login failed. Please check your credentials.';
-          console.error('Login error:', err);
         }
       });
     } else {
       // --- REGISTER ---
       this.apiService.register(name, email, password).subscribe({
-        next: () => {
+        next: (result) => {
+          console.log('[Register] Success', result);
           this.isLoading = false;
           this.router.navigate(['/dashboard']);
         },
         error: (err) => {
+          console.error('[Register] Error', err);
           this.isLoading = false;
           // Extract error message from HTTP error response
           this.errorMessage = err.error?.error || err.error?.message || 'Registration failed. Please try again.';
-          console.error('Registration error:', err);
         }
       });
     }

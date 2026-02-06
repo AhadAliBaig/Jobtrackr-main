@@ -20,7 +20,7 @@
         {{ errorMessage }}
       </div>
 
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit($event)">
         
         <div class="form-group" *ngIf="!isLoginMode">
           <label for="name">Full Name</label>
