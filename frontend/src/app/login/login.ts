@@ -31,11 +31,11 @@ export class LoginComponent {
     private router: Router,
     private apiService: ApiService // Inject Service
   ) {
+    // Initialize form - name is NOT required in login mode
     this.loginForm = this.fb.group({
-      // Name is only required if NOT in login mode
-      name: ['', [Validators.required]], 
+      name: [''], // No validators - will be added in toggleMode for register
       email: ['', [Validators.required, Validators.email, Validators.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)]],
-      password: ['', [Validators.required]], // Will be updated in toggleMode
+      password: ['', [Validators.required]],
       rememberMe: [false]
     });
     
@@ -64,6 +64,17 @@ export class LoginComponent {
   toggleMode() {
     this.isLoginMode = !this.isLoginMode;
     
+    // Update name validator based on mode
+    const nameControl = this.loginForm.get('name');
+    if (this.isLoginMode) {
+      // Login mode: name not required
+      nameControl?.clearValidators();
+    } else {
+      // Register mode: name is required
+      nameControl?.setValidators([Validators.required]);
+    }
+    nameControl?.updateValueAndValidity({ emitEvent: false });
+    
     // Update password validator based on mode
     const passwordControl = this.loginForm.get('password');
     if (this.isLoginMode) {
@@ -87,7 +98,7 @@ export class LoginComponent {
       };
       passwordControl?.setValidators([Validators.required, passwordValidator]);
     }
-    passwordControl?.updateValueAndValidity();
+    passwordControl?.updateValueAndValidity({ emitEvent: false });
     
     // Reset form validity when switching modes
     this.loginForm.reset();
@@ -100,22 +111,27 @@ export class LoginComponent {
       event.stopPropagation();
     }
     
-    console.log('[Login] Form submitted', { 
-      isLoginMode: this.isLoginMode, 
-      formValid: this.loginForm.valid,
-      formValue: this.loginForm.value 
-    });
+    // Clear name errors if in login mode (name is not required for login)
+    if (this.isLoginMode) {
+      this.loginForm.get('name')?.clearValidators();
+      this.loginForm.get('name')?.updateValueAndValidity({ emitEvent: false });
+    }
     
-    // 1. Basic Validation
-    if (this.loginForm.invalid) {
-      console.log('[Login] Form is invalid', this.loginForm.errors);
-      // If in Register mode, Name is mandatory.
-      if (!this.isLoginMode && !this.loginForm.get('name')?.value) {
-        this.loginForm.get('name')?.setErrors({ required: true });
-      }
+    // 1. Basic Validation - only check email and password for login
+    if (this.isLoginMode) {
+      const emailValid = this.loginForm.get('email')?.valid;
+      const passwordValid = this.loginForm.get('password')?.valid;
       
-      // If basic fields are missing
+      if (!emailValid || !passwordValid) {
+        this.loginForm.markAllAsTouched();
+        return;
+      }
+    } else {
+      // Register mode - check all fields including name
       if (this.loginForm.invalid) {
+        if (!this.loginForm.get('name')?.value) {
+          this.loginForm.get('name')?.setErrors({ required: true });
+        }
         this.loginForm.markAllAsTouched();
         return;
       }
@@ -125,18 +141,14 @@ export class LoginComponent {
     this.errorMessage = ''; // Clear previous errors
     const { name, email, password } = this.loginForm.value;
 
-    console.log('[Login] Calling API', { email, isLoginMode: this.isLoginMode });
-
     if (this.isLoginMode) {
       // --- LOGIN ---
       this.apiService.login(email, password).subscribe({
-        next: (result) => {
-          console.log('[Login] Success', result);
+        next: () => {
           this.isLoading = false;
           this.router.navigate(['/dashboard']);
         },
         error: (err) => {
-          console.error('[Login] Error', err);
           this.isLoading = false;
           // Extract error message from HTTP error response
           this.errorMessage = err.error?.error || err.error?.message || 'Login failed. Please check your credentials.';
@@ -145,13 +157,11 @@ export class LoginComponent {
     } else {
       // --- REGISTER ---
       this.apiService.register(name, email, password).subscribe({
-        next: (result) => {
-          console.log('[Register] Success', result);
+        next: () => {
           this.isLoading = false;
           this.router.navigate(['/dashboard']);
         },
         error: (err) => {
-          console.error('[Register] Error', err);
           this.isLoading = false;
           // Extract error message from HTTP error response
           this.errorMessage = err.error?.error || err.error?.message || 'Registration failed. Please try again.';
