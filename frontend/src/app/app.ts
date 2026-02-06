@@ -25,11 +25,12 @@ export class App implements OnInit {
     private renderer: Renderer2,
     private router: Router
   ) {
-    // Route Listener
+    // Route Listener - Hide sidebar on auth pages
     this.router.events.pipe(
       filter((event: Event): event is NavigationEnd => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
-      this.isLoginPage = event.urlAfterRedirects.includes('/login');
+      const authRoutes = ['/login', '/forgot-password', '/reset-password'];
+      this.isLoginPage = authRoutes.some(route => event.urlAfterRedirects.includes(route));
     });
   }
 

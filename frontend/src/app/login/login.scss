@@ -176,9 +176,11 @@
 /* Actions Row (Remember Me) */
 .form-actions.row {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
   font-size: 0.9rem;
+  gap: 1rem;
 }
 
 .remember-me {
