@@ -1,4 +1,4 @@
-# CPSC300 Group Project
+# Jobtrackr
 
 A full-stack application with Angular frontend and Node.js/Express backend.
 
