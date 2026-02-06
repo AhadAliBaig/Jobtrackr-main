@@ -30,7 +30,6 @@ export class JobListComponent implements OnInit {
       this.statusFilter$
     ]).pipe(
       // Debugging: Log the data coming in
-      tap(([jobs, term, status]) => console.log('Filtering:', { jobsCount: jobs.length, term, status })),
       
       map(([jobs, searchTerm, status]) => {
         // 1. Safety Check: Ensure jobs is an array
