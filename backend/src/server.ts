@@ -18,7 +18,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,           // Production frontend
   'http://localhost:4200',            // Angular dev server
   'http://localhost:3000',            // Local testing
-].filter(Boolean); // Remove undefined values
+].filter(Boolean); 
 
 app.use(cors({
   origin: (origin, callback) => {
