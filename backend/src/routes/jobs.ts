@@ -1,17 +1,15 @@
 import express from 'express';
 import pool from '../config/database';
+import { authMiddleware, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 
-// GET /api/jobs - Get all jobs for a user
-router.get('/', async (req, res) => {
-  try {
-    // Express normalizes headers to lowercase, but check both to be safe
-    const userId = req.headers['x-user-id'] || req.headers['X-User-Id'];
+// All job routes are protected - require valid JWT token
 
-    if (!userId) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
+// GET /api/jobs - Get all jobs for a user
+router.get('/', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId; // From verified JWT token
     
     const result = await pool.query(
       'SELECT * FROM jobs WHERE user_id = $1 ORDER BY created_at DESC',
@@ -26,15 +24,10 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/jobs/:id - Get a single job by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
-    // Express normalizes headers to lowercase, but check both to be safe
-    const userId = req.headers['x-user-id'] || req.headers['X-User-Id'];
-
-    if (!userId) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
+    const userId = req.userId;
     
     const result = await pool.query(
       'SELECT * FROM jobs WHERE id = $1 AND user_id = $2',
@@ -53,15 +46,10 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/jobs - Create a new job
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { company, title, status, notes, jobDescription, aiAnalysis, deadline } = req.body;
-    // Express normalizes headers to lowercase, but check both to be safe
-    const userId = req.headers['x-user-id'] || req.headers['X-User-Id'];
-
-    if (!userId) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
+    const userId = req.userId;
     
     // Validate required fields
     if (!company || !title || !jobDescription) {
@@ -83,16 +71,11 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/jobs/:id - Update a job
-router.put('/:id', async (req, res) => {
+router.put('/:id', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
     const { company, title, status, notes, jobDescription, aiAnalysis, deadline } = req.body;
-    // Express normalizes headers to lowercase, but check both to be safe
-    const userId = req.headers['x-user-id'] || req.headers['X-User-Id'];
-
-    if (!userId) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
+    const userId = req.userId;
     
     // Check if job exists and belongs to user
     const checkResult = await pool.query(
@@ -122,15 +105,10 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/jobs/:id - Delete a job
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { id } = req.params;
-    // Express normalizes headers to lowercase, but check both to be safe
-    const userId = req.headers['x-user-id'] || req.headers['X-User-Id'];
-
-    if (!userId) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
+    const userId = req.userId;
     
     const result = await pool.query(
       'DELETE FROM jobs WHERE id = $1 AND user_id = $2 RETURNING *',

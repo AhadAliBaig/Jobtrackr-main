@@ -1,17 +1,15 @@
 import express from 'express';
 import pool from '../config/database';
+import { authMiddleware, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 
-// GET /api/resume - Get user's resume
-router.get('/', async (req, res) => {
-  try {
-    // Express normalizes headers to lowercase, but check both to be safe
-    const userId = req.headers['x-user-id'] || req.headers['X-User-Id'];
+// All resume routes are protected - require valid JWT token
 
-    if (!userId) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
+// GET /api/resume - Get user's resume
+router.get('/', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId; // From verified JWT token
     
     const result = await pool.query(
       'SELECT resume_text FROM resumes WHERE user_id = $1',
@@ -31,21 +29,10 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/resume - Save or update user's resume
-router.post('/', async (req, res) => {
+router.post('/', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { resumeText } = req.body;
-    // Express normalizes headers to lowercase, but check both to be safe
-    const userId = req.headers['x-user-id'] || req.headers['X-User-Id'];
-
-    if (!userId) {
-      // Debug: Log what headers we received
-      console.log('[Resume POST] Headers received:', {
-        'x-user-id': req.headers['x-user-id'],
-        'X-User-Id': req.headers['X-User-Id'],
-        allHeaders: Object.keys(req.headers).filter(k => k.toLowerCase().includes('user'))
-      });
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
+    const userId = req.userId; // From verified JWT token
     
     if (!resumeText) {
       return res.status(400).json({ error: 'Resume text is required' });

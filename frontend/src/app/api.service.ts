@@ -262,7 +262,7 @@ This is a sample resume. Replace it with your own information!`;
   // --- AUTH METHODS ---
 
   login(email: string, password: string): Observable<boolean> {
-    return this.http.post<{success: boolean, user: User}>(
+    return this.http.post<{success: boolean, token: string, user: User}>(
       `${BACKEND_URL}/api/auth/login`,
       { email, password }
     ).pipe(
@@ -272,6 +272,8 @@ This is a sample resume. Replace it with your own information!`;
           console.error('[Login] User object missing id:', response.user);
           throw new Error('Invalid user data received from server');
         }
+        // Store JWT token for authentication
+        localStorage.setItem('markhor_token', response.token);
         this.currentUserSubject.next(response.user);
         localStorage.setItem('markhor_user', JSON.stringify(response.user));
       }),
@@ -280,7 +282,7 @@ This is a sample resume. Replace it with your own information!`;
   }
 
   register(name: string, email: string, password: string): Observable<boolean> {
-    return this.http.post<{success: boolean, user: User}>(
+    return this.http.post<{success: boolean, token: string, user: User}>(
       `${BACKEND_URL}/api/auth/register`,
       { name, email, password }
     ).pipe(
@@ -290,6 +292,8 @@ This is a sample resume. Replace it with your own information!`;
           console.error('[Register] User object missing id:', response.user);
           throw new Error('Invalid user data received from server');
         }
+        // Store JWT token for authentication
+        localStorage.setItem('markhor_token', response.token);
         this.currentUserSubject.next(response.user);
         localStorage.setItem('markhor_user', JSON.stringify(response.user));
       }),
@@ -299,6 +303,7 @@ This is a sample resume. Replace it with your own information!`;
 
   logout() {
     this.currentUserSubject.next(null);
+    localStorage.removeItem('markhor_token');  // Clear JWT token
     localStorage.removeItem('markhor_user');
     localStorage.removeItem('markhor_jobs');  // Clear old jobs from localStorage
     // Reset to empty

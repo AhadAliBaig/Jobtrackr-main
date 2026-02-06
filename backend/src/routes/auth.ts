@@ -1,8 +1,18 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import pool from '../config/database';
+import { authMiddleware, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
+
+// JWT secret - should match the one in middleware/auth.ts
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+// Helper: Generate JWT token with userId in payload, expires in 7 days
+function generateToken(userId: number): string {
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' });
+}
 
 // Helper function to generate initials from name
 function generateInitials(name: string): string {
@@ -49,10 +59,13 @@ router.post('/register', async (req, res) => {
       [name, email, hashedPassword, initials]
     );
     
-    // Return user data (without password)
+    // Return user data (without password) + JWT token
     const user = result.rows[0];
+    const token = generateToken(user.id);
+    
     res.status(201).json({
       success: true,
+      token,
       user: {
         id: user.id,
         name: user.name,
@@ -95,9 +108,13 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
     
-    // Return user data (without password)
+    // Generate JWT token
+    const token = generateToken(user.id);
+    
+    // Return user data (without password) + JWT token
     res.json({
       success: true,
+      token,
       user: {
         id: user.id,
         name: user.name,
@@ -108,6 +125,39 @@ router.post('/login', async (req, res) => {
   } catch (error) {
     console.error('Error logging in:', error);
     res.status(500).json({ error: 'Failed to login' });
+  }
+});
+
+// GET /api/auth/me - Get current user (protected route)
+// Uses authMiddleware to verify the JWT token first
+router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    // userId is attached by authMiddleware after verifying the token
+    const userId = req.userId;
+    
+    const result = await pool.query(
+      'SELECT id, name, email, initials, created_at FROM users WHERE id = $1',
+      [userId]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const user = result.rows[0];
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        initials: user.initials,
+        createdAt: user.created_at
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ error: 'Failed to fetch user' });
   }
 });
 
