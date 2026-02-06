@@ -1,82 +1,81 @@
-# Jobtrackr
+# JobTrackr
 
-Tired of using excel sheets to keep track of your applications? check out Jobtrackr
+Tired of using Excel spreadsheets every time you apply for a job? JobTrackr helps you organize your job applications, track your progress, and land your dream job.
 
-## Prerequisites
+**Live Website:** [https://jobtrackkr.netlify.app](https://jobtrackkr.netlify.app)
 
-- Node.js (v18 or higher)
-- npm or yarn
+## What is JobTrackr?
+
+JobTrackr is a web application that lets you keep track of all your job applications in one place. Instead of managing multiple Excel files or sticky notes, you can organize applications by status, analyze your resume against job descriptions using AI, and generate cover letters automatically.
+
+The application is currently hosted on free tier services, which means the backend may take 30 to 60 seconds to wake up on the first request. This is normal and expected behavior for free hosting services.
+
+## Features
+
+**Application Tracking**
+- Add and organize job applications by company, position, and status
+- Track application progress through different stages: To Apply, Applied, Interviewing, Offer, Rejected
+- Add notes, deadlines, and job descriptions for each application
+- View all applications in a clean, organized dashboard
+
+**Resume Management**
+- Store your master resume in one central location
+- Access your resume from anywhere, on any device
+- Edit and update your resume as you gain new skills and experience
+
+**AI Powered Analysis**
+- Compare your resume against any job description
+- Get match scores and keyword analysis
+- Identify missing skills and keywords
+- Receive AI powered suggestions for improving your resume
+- Powered by Google Gemini AI
+
+**Cover Letter Generation**
+- Generate professional cover letters automatically
+- Tailor cover letters to specific job descriptions
+- Save time on repetitive writing tasks
+
+**Visual Board View**
+- Organize applications using a kanban style board
+- Drag and drop applications between status columns
+- Visualize your job search progress at a glance
+
+**Resources and Guides**
+- Access sample resumes from top companies
+- Learn from successful application examples
+- Get tips and guides for resumes, cover letters, interviews, and more
+
+**Secure Authentication**
+- Create your account with secure password requirements
+- Password reset functionality via email
+- Your data is protected with industry standard encryption
+
+## Technology Stack
+
+**Frontend**
+- Angular 18
+- TypeScript
+- SCSS for styling
+
+**Backend**
+- Node.js with Express
 - PostgreSQL database
+- JWT authentication
+- Google Gemini AI integration
+- Resend email service
 
-## Quick Start
+**Hosting**
+- Frontend deployed on Netlify
+- Backend deployed on Render
+- Free tier hosting for both services
 
-### 1. Install Dependencies
 
-**Backend:**
-```bash
-cd backend
-npm install
-```
 
-**Frontend:**
-```bash
-cd frontend
-npm install
-```
 
-### 2. Setup Environment Variables
+## Contributing
 
-Create a `.env` file in the `backend/` directory with your database credentials:
+This is a personal project, but suggestions and feedback are welcome. If you find any issues or have ideas for improvements, feel free to reach out.
 
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=your_database_name
-DB_USER=your_username
-DB_PASSWORD=your_password
-GEMINI_API_KEY=your_gemini_api_key
-GEMINI_MODEL=gemini-2.5-flash
-```
+## License
 
-### 3. Run the Application
-
-Open **two terminals**:
-
-**Terminal 1 - Backend:**
-```bash
-cd backend
-npm run dev
-```
-Backend runs on `http://localhost:3000`
-
-**Terminal 2 - Frontend:**
-```bash
-cd frontend
-ng serve
-```
-Frontend runs on `http://localhost:4200`
-
-Open your browser and navigate to `http://localhost:4200`
-
-## Project Structure
-
-```
-├── backend/          # Node.js/Express API
-│   ├── src/
-│   └── .env         # Database configuration (create this)
-├── frontend/         # Angular application
-└── README.md
-```
-
-## Important Notes
-
-- Make sure your `.env` file is in the `backend/` directory
-- Never commit `.env` files to Git (already in `.gitignore`)
-- Backend must be running before using the frontend
-- Database must be set up and running before starting the backend
-
-## Troubleshooting
-
-- **Backend won't start**: Check your `.env` file and database connection
-- **Frontend can't connect**: Make sure backend is running on port 3000
-- **Port already in use**: Stop other services using ports 3000 or 4200
+This project is open source and available for personal use.

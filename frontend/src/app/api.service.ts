@@ -311,6 +311,20 @@ This is a sample resume. Replace it with your own information!`;
     this.jobs$.next([]);
   }
 
+  forgotPassword(email: string): Observable<{success: boolean, message: string, resetLink?: string}> {
+    return this.http.post<{success: boolean, message: string, resetLink?: string}>(
+      `${BACKEND_URL}/api/auth/forgot-password`,
+      { email }
+    );
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<{success: boolean, message: string}> {
+    return this.http.post<{success: boolean, message: string}>(
+      `${BACKEND_URL}/api/auth/reset-password`,
+      { token, newPassword }
+    );
+  }
+
   // --- HELPER: Map backend snake_case to frontend camelCase ---
   private mapJobFromBackend(job: any): Job {
     return {

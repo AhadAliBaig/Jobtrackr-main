@@ -16,6 +16,15 @@ export class LoginComponent {
   isLoading = false;
   isLoginMode = true; // Start in Login Mode
   errorMessage = ''; // Store error message to display
+  
+  // Password requirements for display
+  passwordRequirements = {
+    minLength: false,
+    hasUpperCase: false,
+    hasLowerCase: false,
+    hasNumber: false,
+    hasSpecialChar: false
+  };
 
   constructor(
     private fb: FormBuilder, 
@@ -24,15 +33,62 @@ export class LoginComponent {
   ) {
     this.loginForm = this.fb.group({
       // Name is only required if NOT in login mode
-      name: [''], 
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      name: ['', [Validators.required]], 
+      email: ['', [Validators.required, Validators.email, Validators.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)]],
+      password: ['', [Validators.required]], // Will be updated in toggleMode
       rememberMe: [false]
+    });
+    
+    // Watch password changes to update requirements display
+    this.loginForm.get('password')?.valueChanges.subscribe(value => {
+      if (value) {
+        this.passwordRequirements = {
+          minLength: value.length >= 8,
+          hasUpperCase: /[A-Z]/.test(value),
+          hasLowerCase: /[a-z]/.test(value),
+          hasNumber: /[0-9]/.test(value),
+          hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(value)
+        };
+      } else {
+        this.passwordRequirements = {
+          minLength: false,
+          hasUpperCase: false,
+          hasLowerCase: false,
+          hasNumber: false,
+          hasSpecialChar: false
+        };
+      }
     });
   }
 
   toggleMode() {
     this.isLoginMode = !this.isLoginMode;
+    
+    // Update password validator based on mode
+    const passwordControl = this.loginForm.get('password');
+    if (this.isLoginMode) {
+      // Login mode: only require password, no strength requirements
+      passwordControl?.setValidators([Validators.required]);
+    } else {
+      // Register mode: require strong password
+      const passwordValidator = (control: any) => {
+        if (!control.value) return null;
+        
+        const value = control.value;
+        const errors: any = {};
+        
+        if (value.length < 8) errors.minLength = true;
+        if (!/[A-Z]/.test(value)) errors.hasUpperCase = true;
+        if (!/[a-z]/.test(value)) errors.hasLowerCase = true;
+        if (!/[0-9]/.test(value)) errors.hasNumber = true;
+        if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) errors.hasSpecialChar = true;
+        
+        return Object.keys(errors).length > 0 ? errors : null;
+      };
+      passwordControl?.setValidators([Validators.required, passwordValidator]);
+    }
+    passwordControl?.updateValueAndValidity();
+    
     // Reset form validity when switching modes
     this.loginForm.reset();
     this.errorMessage = ''; // Clear error when switching modes
