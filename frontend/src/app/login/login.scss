@@ -231,9 +231,53 @@
   }
 }
 
+/* Early Stage Notice */
+.early-stage-notice {
+  display: flex;
+  gap: 12px;
+  margin-top: 1.5rem;
+  padding: 14px 16px;
+  background-color: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 10px;
+  
+  .notice-icon {
+    flex-shrink: 0;
+    color: #d97706;
+    margin-top: 2px;
+  }
+  
+  .notice-content {
+    strong {
+      display: block;
+      color: #92400e;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+    
+    p {
+      color: #a16207;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      margin: 0;
+    }
+  }
+}
+
+/* Dark mode support for notice */
+:host-context(.dark-mode) .early-stage-notice,
+.dark-mode .early-stage-notice {
+  background-color: rgba(251, 191, 36, 0.1);
+  border-color: rgba(251, 191, 36, 0.3);
+  
+  .notice-icon { color: #fbbf24; }
+  .notice-content strong { color: #fcd34d; }
+  .notice-content p { color: #fde68a; }
+}
+
 /* Footer */
 .form-footer {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   text-align: center;
   font-size: 0.95rem;
   color: var(--text-muted);
