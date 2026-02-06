@@ -12,7 +12,29 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// CORS Configuration - Only allow requests from your frontend
+// Set FRONTEND_URL in your .env file (e.g., https://jobtrackr.vercel.app)
+const allowedOrigins = [
+  process.env.FRONTEND_URL,           // Production frontend
+  'http://localhost:4200',            // Angular dev server
+  'http://localhost:3000',            // Local testing
+].filter(Boolean); // Remove undefined values
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`[CORS] Blocked request from: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true // Allow cookies/auth headers
+}));
+
 app.use(express.json());
 
 // Database

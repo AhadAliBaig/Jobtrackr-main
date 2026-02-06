@@ -1,9 +1,12 @@
 import express from 'express';
 import { ResumeAnalyzer } from '../ai/resumeAnalyzer';
 import { AIConfig, AIService } from '../ai/aiService';
-
+import { authMiddleware } from '../middleware/auth';
 
 const router = express.Router();
+
+// All AI routes are protected - require valid JWT token
+// This prevents unauthorized users from using your Gemini API credits
 
 // Configure AI (reads from .env)
 const aiConfig: AIConfig = {
@@ -15,7 +18,7 @@ const analyzer = new ResumeAnalyzer(aiConfig);
 const aiService = new AIService(aiConfig);
 
 // POST /ai/analyze - Analyze resume against job description
-router.post('/analyze', async (req, res) => {
+router.post('/analyze', authMiddleware, async (req, res) => {
   try {
     const { job_description, resume_text, use_ai } = req.body;
 
@@ -52,7 +55,7 @@ router.post('/analyze', async (req, res) => {
 });
 
 
-router.post('/cover-letter', async (req, res) => {
+router.post('/cover-letter', authMiddleware, async (req, res) => {
   try {
     const { jobDescription } = req.body;
     if (!jobDescription) {

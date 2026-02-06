@@ -28,7 +28,7 @@
             type="text" 
             id="name" 
             formControlName="name" 
-            placeholder="e.g. Jayesh"
+            placeholder="e.g. User Name"
             [class.invalid]="loginForm.get('name')?.invalid && loginForm.get('name')?.touched"
           >
            <div *ngIf="loginForm.get('name')?.invalid && loginForm.get('name')?.touched" class="error-msg">
