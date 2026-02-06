@@ -1,6 +1,6 @@
 # Jobtrackr
 
-A full-stack application with Angular frontend and Node.js/Express backend.
+Tired of using excel sheets to keep track of your applications? check out Jobtrackr
 
 ## Prerequisites
 
